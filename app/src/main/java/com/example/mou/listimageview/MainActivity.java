@@ -1,11 +1,15 @@
 package com.example.mou.listimageview;
+import android.Manifest;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -76,14 +80,25 @@ public class MainActivity extends AppCompatActivity {
         dialog.findViewById(R.id.btnChoosePath)
                 .setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
-                        activeGallery();
                         dialog.dismiss();
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 110);
+                        } else {
+                            activeGallery();
+                        }
+
+
                     }
                 });
         dialog.findViewById(R.id.btnTakePhoto)
                 .setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
-                        activeTakePhoto();
+                        dialog.dismiss();
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 210);
+                        } else {
+                            activeTakePhoto();
+                        }
                     }
                 });
 
@@ -91,9 +106,26 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == 110) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                activeGallery();
+            }
+        }
+
+       else if (requestCode == 210) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                activeTakePhoto();
+            }
+        }}
+
     /**
      * take a photo
      */
+
     private void activeTakePhoto() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
